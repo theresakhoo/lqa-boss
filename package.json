@@ -40,7 +40,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint": "npx tsc --noEmit --strict && echo 'TypeScript check passed'",
-    "test:unit": "node --test tests/unit/normalizedText.test.js tests/unit/saveHandler.test.js",
+    "test:unit": "node --test tests/unit/normalizedText.test.js tests/unit/saveHandler.test.js tests/unit/placeholderDisplay.test.js",
     "test:ui": "npm run test:ui:start",
     "test:ui:start": "vite --port 3000 & echo $! > .vite.pid && wait-on http://localhost:3000 && npm run test:ui:run; EXIT_CODE=$?; kill $(cat .vite.pid) 2>/dev/null; rm -f .vite.pid; exit $EXIT_CODE",
     "test:ui:run": "node --test tests/ui/app.test.js tests/ui/editor.test.js",

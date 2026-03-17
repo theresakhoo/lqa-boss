@@ -126,12 +126,23 @@ export class PlaceholderNode extends DecoratorNode<React.ReactNode> {
   }
 
   getTextContent(): string {
-    return `{${this.__index}}`
+    // Extract the number from the placeholder value and add 1 for 1-based indexing
+    const match = this.__placeholder.v.match(/\{(\d+)\}/)
+    if (match) {
+      const num = parseInt(match[1], 10) + 1
+      return `{${num}}`
+    }
+    // Fallback to show index if pattern doesn't match
+    return `{${this.__index + 1}}`
   }
 
   decorate(): React.ReactNode {
+    // Extract the number from placeholder value and add 1 for 1-based display
+    // This shows which placeholder from the job.json it corresponds to
+    const match = this.__placeholder.v.match(/\{(\d+)\}/)
+    const displayValue = match ? (parseInt(match[1], 10) + 1).toString() : (this.__index + 1).toString()
     // Return wrapped in span - plain primitives don't work correctly with Lexical
-    return <span>{this.__index}</span>
+    return <span>{displayValue}</span>
   }
 
   static importJSON(serializedNode: any): PlaceholderNode {
