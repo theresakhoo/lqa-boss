@@ -15,9 +15,10 @@ import { normalizedArraysEqual } from '../../../utils/normalizedComparison'
 // Plugin to initialize editor with normalized content
 interface InitializePluginProps {
   normalizedContent: NormalizedItem[]
+  sourceContent?: NormalizedItem[]
 }
 
-export function InitializePlugin({ normalizedContent }: InitializePluginProps): null {
+export function InitializePlugin({ normalizedContent, sourceContent }: InitializePluginProps): null {
   const [editor] = useLexicalComposerContext()
   const isInitializedRef = useRef(false)
   const lastExternalContentRef = useRef<NormalizedItem[]>([])
@@ -86,8 +87,20 @@ export function InitializePlugin({ normalizedContent }: InitializePluginProps): 
 
         let paragraph = $createParagraphNode()
 
-        // Track placeholder index (1-based)
-        let placeholderIndex = 1
+        // Build a list of source placeholders with their positions
+        const sourcePlaceholders: Array<{ item: NormalizedItem; index: number }> = []
+        if (sourceContent) {
+          let sourceIndex = 0
+          sourceContent.forEach(item => {
+            if (typeof item !== 'string') {
+              sourcePlaceholders.push({ item, index: sourceIndex })
+              sourceIndex++
+            }
+          })
+        }
+
+        // Track current position for fallback (0-based)
+        let currentPosition = 0
 
         normalizedContent.forEach((item) => {
           if (typeof item === 'string') {
@@ -104,8 +117,44 @@ export function InitializePlugin({ normalizedContent }: InitializePluginProps): 
               }
             })
           } else {
-            paragraph.append($createPlaceholderNode(item, placeholderIndex))
-            placeholderIndex++
+            // Find the matching source placeholder
+            let index = currentPosition
+
+            if (sourceContent && sourcePlaceholders.length > 0) {
+              // First, try to find exact match including all properties
+              const exactMatch = sourcePlaceholders.find(sp =>
+                typeof sp.item !== 'string' &&
+                sp.item.v === item.v &&
+                sp.item.t === item.t
+              )
+
+              if (exactMatch) {
+                index = exactMatch.index
+              } else {
+                // If no exact match, try matching just by value
+                const valueMatch = sourcePlaceholders.find(sp =>
+                  typeof sp.item !== 'string' && sp.item.v === item.v
+                )
+                if (valueMatch) {
+                  index = valueMatch.index
+                }
+              }
+
+              // For handling duplicates, remove the matched item from future matches
+              // This ensures first occurrence in translation maps to first in source, etc.
+              const matchIndex = sourcePlaceholders.findIndex(sp =>
+                typeof sp.item !== 'string' &&
+                sp.item.v === item.v &&
+                sp.item.t === item.t
+              )
+              if (matchIndex !== -1) {
+                index = sourcePlaceholders[matchIndex].index
+                sourcePlaceholders.splice(matchIndex, 1)
+              }
+            }
+
+            paragraph.append($createPlaceholderNode(item, index))
+            currentPosition++
           }
         })
 
@@ -116,7 +165,7 @@ export function InitializePlugin({ normalizedContent }: InitializePluginProps): 
         isInitializedRef.current = true
       }, { tag: 'content-update' })
     }
-  }, [editor, normalizedContent])
+  }, [editor, normalizedContent, sourceContent])
 
   return null
 }

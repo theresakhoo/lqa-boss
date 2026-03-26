@@ -10,11 +10,15 @@ import {
   LexicalNode,
   TextNode
 } from 'lexical'
-import { NormalizedPlaceholder } from '../../../types'
+import { NormalizedItem, NormalizedPlaceholder } from '../../../types'
 import { $createPlaceholderNode, setAllowPlaceholderRemoval } from '../nodes/PlaceholderNode'
 
+interface DragDropPluginProps {
+  sourceContent?: NormalizedItem[]
+}
+
 // Plugin to handle drag and drop
-export function DragDropPlugin(): null {
+export function DragDropPlugin({ sourceContent }: DragDropPluginProps): null {
   const [editor] = useLexicalComposerContext()
 
   useEffect(() => {
@@ -334,7 +338,7 @@ export function DragDropPlugin(): null {
         removeDragIndicator()
       }
     }
-  }, [editor])
+  }, [editor, sourceContent])
 
   return null
 }

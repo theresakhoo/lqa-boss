@@ -32,6 +32,7 @@ let globalPlaceholderDescriptions: { [key: string]: PlaceholderDescription } | u
 
 interface NormalizedTextEditorProps {
   normalizedContent: NormalizedItem[]
+  sourceContent?: NormalizedItem[]
   onChange: (normalizedContent: NormalizedItem[]) => void
   onFocus?: () => void
   isActive?: boolean
@@ -41,6 +42,7 @@ interface NormalizedTextEditorProps {
 
 const NormalizedTextEditor = forwardRef<NormalizedTextEditorRef, NormalizedTextEditorProps>(({
   normalizedContent,
+  sourceContent,
   onChange,
   onFocus,
   isActive,
@@ -299,9 +301,9 @@ const NormalizedTextEditor = forwardRef<NormalizedTextEditorRef, NormalizedTextE
         <PlainTextPastePlugin />
         <ArrowNavigationPlugin />
         <KeyboardShortcutPlugin />
-        <InitializePlugin normalizedContent={normalizedContent} />
-        <DragDropPlugin />
-        <EditorRefPlugin editorRef={editorRef} />
+        <InitializePlugin normalizedContent={normalizedContent} sourceContent={sourceContent} />
+        <DragDropPlugin sourceContent={sourceContent} />
+        <EditorRefPlugin editorRef={editorRef} sourceContent={sourceContent} />
       </Box>
     </LexicalComposer>
   )

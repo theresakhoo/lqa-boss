@@ -760,6 +760,7 @@ const TextSegmentEditor: React.FC<TextSegmentEditorProps> = ({
                       normalizedEditorRefs.current[tu.guid] = ref
                     }}
                     normalizedContent={tu.ntgt || []}
+                    sourceContent={tu.nsrc}
                     onChange={(newNtgt) => handleNormalizedChange(tu.guid, newNtgt)}
                     isActive={isActive}
                     placeholderDescriptions={placeholderDescriptions}

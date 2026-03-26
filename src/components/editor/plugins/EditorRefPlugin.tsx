@@ -11,7 +11,10 @@ export interface NormalizedTextEditorRef {
 }
 
 // Plugin to expose editor methods via ref
-export function EditorRefPlugin({ editorRef }: { editorRef: React.RefObject<NormalizedTextEditorRef | null> }): null {
+export function EditorRefPlugin({ editorRef, sourceContent }: {
+  editorRef: React.RefObject<NormalizedTextEditorRef | null>,
+  sourceContent?: NormalizedItem[]
+}): null {
   const [editor] = useLexicalComposerContext()
 
   React.useImperativeHandle(editorRef, () => ({
@@ -28,8 +31,20 @@ export function EditorRefPlugin({ editorRef }: { editorRef: React.RefObject<Norm
 
         let paragraph = $createParagraphNode()
 
-        // Track placeholder index (1-based)
-        let placeholderIndex = 1
+        // Build a list of source placeholders with their positions
+        const sourcePlaceholders: Array<{ item: NormalizedItem; index: number }> = []
+        if (sourceContent) {
+          let sourceIndex = 0
+          sourceContent.forEach(item => {
+            if (typeof item !== 'string') {
+              sourcePlaceholders.push({ item, index: sourceIndex })
+              sourceIndex++
+            }
+          })
+        }
+
+        // Track current position for fallback (0-based)
+        let currentPosition = 0
 
         content.forEach((item) => {
           if (typeof item === 'string') {
@@ -46,8 +61,24 @@ export function EditorRefPlugin({ editorRef }: { editorRef: React.RefObject<Norm
               }
             })
           } else {
-            paragraph.append($createPlaceholderNode(item, placeholderIndex))
-            placeholderIndex++
+            // Find the matching source placeholder
+            let index = currentPosition
+
+            if (sourceContent && sourcePlaceholders.length > 0) {
+              // For handling duplicates, find and remove the first matching item
+              const matchIndex = sourcePlaceholders.findIndex(sp =>
+                typeof sp.item !== 'string' &&
+                sp.item.v === item.v &&
+                sp.item.t === item.t
+              )
+              if (matchIndex !== -1) {
+                index = sourcePlaceholders[matchIndex].index
+                sourcePlaceholders.splice(matchIndex, 1)
+              }
+            }
+
+            paragraph.append($createPlaceholderNode(item, index))
+            currentPosition++
           }
         })
 
@@ -55,7 +86,7 @@ export function EditorRefPlugin({ editorRef }: { editorRef: React.RefObject<Norm
         root.append(paragraph)
       }, { tag: 'force-update' })
     }
-  }), [editor])
+  }), [editor, sourceContent])
 
   return null
 }
