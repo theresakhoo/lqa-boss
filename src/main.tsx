@@ -49,7 +49,13 @@ const PathRedirect: React.FC = () => {
   const navigate = useNavigate()
 
   useEffect(() => {
-    const pathSegments = window.location.pathname.split('/').filter(Boolean)
+    // Strip the base path if present
+    const basePath = '/lqa-boss'
+    const pathname = window.location.pathname.startsWith(basePath)
+      ? window.location.pathname.slice(basePath.length)
+      : window.location.pathname
+
+    const pathSegments = pathname.split('/').filter(Boolean)
 
     if (pathSegments.length === 0) {
       // Already at root
