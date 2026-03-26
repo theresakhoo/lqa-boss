@@ -9,7 +9,7 @@ export default defineConfig({
   define: {
     'import.meta.env.PACKAGE_VERSION': JSON.stringify(packageJson.version)
   },
-  base: '/',
+  base: '/lqa-boss/',
   plugins: [react()],
   server: {
     port: 3000
