@@ -111,7 +111,7 @@ const router = createBrowserRouter([
     element: <PathRedirect />,
   },
 ], {
-  basename: "/lqa-boss"
+  basename: "/"
 })
 
 const root = createRoot(document.getElementById('root')!)
